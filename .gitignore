@@ -30,3 +30,18 @@
 *.exe
 *.out
 *.app
+
+# CMake Stuff
+CMakeCache.txt
+CMakeFiles/
+CMakeTrust.txt
+CMakeUserPresets.json
+*.cmake
+!CMakeLists.txt
+
+# Build Directories
+.build/
+build/
+out/
+bin/
+lib/
