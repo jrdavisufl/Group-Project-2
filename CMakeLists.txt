@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 project(MyProject CXX)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include(FetchContent)
@@ -29,6 +29,7 @@ endif()
 add_executable(app
     src/main.cpp
     src/core.cpp
+    src/error.cpp
 )
 target_include_directories(app PRIVATE include ${bpptree_SOURCE_DIR})
 set_target_properties(app PROPERTIES OUTPUT_NAME "app")
