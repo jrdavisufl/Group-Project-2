@@ -27,9 +27,9 @@ std::expected<void, Error> ParseMainInputs(std::vector<std::string>& inputs) {
 
     if (inputs[0] == "web") {
         return InitializeWeb();
-    } else if ("manual") {
+    } else if (inputs[0] == "manual") {
         // manual testing of algorithm on real florida addresses
-    } else if ("file") {
+    } else if (inputs[0] == "file") {
         return ConstructPathFromFile(inputs.size() > 1 ? inputs[1] : "");
     }
 

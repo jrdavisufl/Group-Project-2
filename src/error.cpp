@@ -41,7 +41,7 @@ std::ostream& operator<<(std::ostream& os, const Error& e) {
 
 std::string Error::ErrorTypeToString(ErrorType type) {
     static constexpr std::string_view names[] = {
-        "EmptyTree",
+        "Empty",
         "InvalidInput",
         "NotFound",
         "OutOfBounds",

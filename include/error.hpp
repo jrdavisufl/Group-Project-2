@@ -5,7 +5,7 @@
 
 // valid error codes
 enum class ErrorType {
-    EmptyTree,
+    Empty,
     InvalidInput,
     NotFound,
     OutOfBounds,
