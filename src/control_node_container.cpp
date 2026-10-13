@@ -4,6 +4,7 @@
 #include <sstream>
 #include <string>
 
+#include "astar_algorithm.hpp"
 #include "control_node_container.hpp"
 
 ControlNodeContainer::~ControlNodeContainer() {
@@ -30,7 +31,7 @@ ControlNode* ControlNodeContainer::GetNodeFromKey(std::string key) {
     return nodeMap[key];
 }
 
-void ControlNodeContainer::PrintGrid() {
+void ControlNodeContainer::PrintGrid(ankerl::unordered_dense::map<ControlNode*, bool> path) {
     for (int i = 0; i < this->yBounds; ++i) {
         std::stringstream outgoing;
 
@@ -39,12 +40,23 @@ void ControlNodeContainer::PrintGrid() {
             if (node == nullptr) {
                 outgoing << ' ';
             } else {
-                outgoing << node->GetCharacterRepresentation();
+                outgoing << node->GetCharacterRepresentation(path.contains(node));
             }
         }
 
         std::cout << outgoing.str() << std::endl;
     }
+}
+
+void ControlNodeContainer::PrintAstarGrid() {
+    auto astarPath = GetAstarPath<ControlNode>(this->start, this->target);
+    ankerl::unordered_dense::map<ControlNode*, bool> path = {};
+
+    for (int i = 0; i < astarPath.size(); ++i) {
+        path[astarPath[i]] = true;
+    }
+
+    this->PrintGrid(path);
 }
 
 std::expected<void, Error> ControlNodeContainer::AddNode(int x, int y, char character) {
@@ -53,7 +65,7 @@ std::expected<void, Error> ControlNodeContainer::AddNode(int x, int y, char char
         return std::unexpected(Error(ErrorType::DuplicateValue, "Key already exists"));
     }
 
-    int cost = costMap[character] || 1;
+    int cost = costMap[character] > 0 ? costMap[character] : 1;
     
     ControlNode* newNode = new ControlNode(this, x, y, cost);
     nodeMap[key] = newNode;

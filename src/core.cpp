@@ -46,6 +46,9 @@ std::expected<void, Error> ConstructPathFromFile(std::string fileName) {
     inputFile.close();
 
     container.PrintGrid();
+    std::cout << std::endl << "================" << std::endl << std::endl;
+    container.PrintAstarGrid();
+    std::cout << std::endl;
 
     return {};
 }

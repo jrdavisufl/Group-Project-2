@@ -14,12 +14,8 @@ ControlNode::ControlNode(ControlNodeContainer* container, int x, int y, int cost
     this->container = container;
 }
 
-bool ControlNode::IsGreater(Pathable* other, Pathable* target) const {
-    if (other == nullptr) {
-        return true;
-    }
-
-    return this->GetFCost(target) > other->GetFCost(target);
+bool ControlNode::operator>(const Pathable& other) const {
+    return this->GetFCost() > other.GetFCost();
 }
 
 std::vector<Pathable*> ControlNode::GetNeighbors() {
@@ -29,7 +25,6 @@ std::vector<Pathable*> ControlNode::GetNeighbors() {
         auto node = container->GetNode(x, y);
         if (node == nullptr) return;
 
-        node->setParent(this);
         outgoing.push_back(node);
     };
 
@@ -39,6 +34,15 @@ std::vector<Pathable*> ControlNode::GetNeighbors() {
     tryAdd(x, y + 1);
 
     return outgoing;
+}
+
+void ControlNode::SetParent(Pathable* parent) {
+    this->parent = parent;
+    this->g = parent->GetGCost() + this->cost;
+}
+
+Pathable* ControlNode::GetParent() {
+    return this->parent;
 }
 
 std::string ControlNode::GetKey(int x, int y) {
@@ -53,7 +57,7 @@ int ControlNode::GetCost() const {
     return this->cost;
 }
 
-char ControlNode::GetCharacterRepresentation() const {
+char ControlNode::GetCharacterRepresentation(bool isPath) const {
     if (this == container->start) {
         return PATHABLE_START_CHARACTER;
     }
@@ -62,10 +66,24 @@ char ControlNode::GetCharacterRepresentation() const {
         return PATHABLE_TARGET_CHARACTER;
     }
 
-    // switch (this->cost) {
-    //     case 1:
-    //         return '0';
-    // }
+    if (isPath) {
+        if (this->parent == nullptr) {
+            return '-';
+        }
+
+        auto parent = static_cast<ControlNode*>(this->parent);
+
+        return (this->y != parent->y) ? '|' : '-';
+    }
+
+    switch (this->cost) {
+        case 1:
+            return '0';
+        case 2:
+            return '#';
+        case 3:
+            return '%';
+    }
 
     return '0';
 }
@@ -74,15 +92,14 @@ int ControlNode::GetGCost() const {
     return this->g;
 }
 
-int ControlNode::GetHCost(Pathable* target) const {
+int ControlNode::GetHCost() const {
+    auto target = this->container->target;
     if (target == nullptr) {
         return 0;
     }
 
-    auto* concreteNode = static_cast<ControlNode*>(target);
-
-    int a = concreteNode->x - this->x;
-    int b = concreteNode->y - this->y;
+    int a = target->x - this->x;
+    int b = target->y - this->y;
 
     a *= a;
     b *= b;
@@ -90,16 +107,11 @@ int ControlNode::GetHCost(Pathable* target) const {
     return static_cast<int>(std::ceil(std::sqrt(a + b)));
 }
 
-int ControlNode::GetFCost(Pathable* target) const {
-    return this->GetGCost() + this->GetHCost(target);
+int ControlNode::GetFCost() const {
+    return this->GetGCost() + this->GetHCost();
 }
 
 void ControlNode::reset() {
     this->g = 0;
     this->parent = nullptr;
-}
-
-void ControlNode::setParent(ControlNode* parent) {
-    this->parent = parent;
-    this->g = parent->GetGCost() + this->cost;
 }

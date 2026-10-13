@@ -14,7 +14,8 @@ class ControlNodeContainer {
         ControlNode* GetNode(int x, int y);
         ControlNode* GetNodeFromKey(std::string key);
         
-        void PrintGrid();
+        void PrintGrid(ankerl::unordered_dense::map<ControlNode*, bool> path = {});
+        void PrintAstarGrid();
 
         std::expected<void, Error> AddNode(int x, int y, char character = '0');
         std::expected<void, Error> AddLine(std::string& line);
@@ -28,6 +29,8 @@ class ControlNodeContainer {
             {'A', 1},
             {'B', 1},
             {'0', 1},
+            {'#', 2},
+            {'%', 3},
         };
 
         int xBounds = 0;
