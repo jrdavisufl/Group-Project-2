@@ -11,9 +11,28 @@ class ControlNodeContainer {
     public:
         ~ControlNodeContainer();
 
-        std::expected<void, Error> AddNode(int x, int y);
         ControlNode* GetNode(int x, int y);
         ControlNode* GetNodeFromKey(std::string key);
+        
+        void PrintGrid();
+
+        std::expected<void, Error> AddNode(int x, int y, char character = '0');
+        std::expected<void, Error> AddLine(std::string& line);
+
+        friend class ControlNode;
+
     private:
         ankerl::unordered_dense::map<std::string, ControlNode*> nodeMap;
+
+        std::unordered_map<char, int> costMap = {
+            {'A', 1},
+            {'B', 1},
+            {'0', 1},
+        };
+
+        int xBounds = 0;
+        int yBounds = 0;
+
+        ControlNode* start = nullptr;
+        ControlNode* target = nullptr;
 };

@@ -2,6 +2,9 @@
 
 #include <vector>
 
+constexpr char PATHABLE_START_CHARACTER = 'A';
+constexpr char PATHABLE_TARGET_CHARACTER = 'B';
+
 class Pathable {
     public:
         virtual bool IsGreater(Pathable* other, Pathable* target) const = 0;

@@ -1,7 +1,10 @@
 #include <expected>
+#include <fstream>
+#include <regex>
 #include <string>
 #include <vector>
 
+#include "control_node_container.hpp"
 #include "core.hpp"
 #include "error.hpp"
 
@@ -16,6 +19,33 @@ std::expected<void, Error> ConstructPathFromFile(std::string fileName) {
     if (fileName.size() == 0) {
         return std::unexpected(Error(ErrorType::InvalidInput, "File name cannot be empty."));
     }
+
+    std::ifstream inputFile("inputs/" + fileName);
+    if (!inputFile.is_open()) {
+        return std::unexpected(Error(ErrorType::InvalidInput, "File does not exist"));
+    }
+
+    ControlNodeContainer container;
+
+    // ignores lines that are either all white space or comments
+    // (comments denoted with a //)
+    static const std::regex commentPattern(R"(^\s*(//|$))");
+
+    std::string line;
+    while (std::getline(inputFile, line)) {
+        if (std::regex_search(line, commentPattern)) {
+            continue;
+        }
+
+        auto result = container.AddLine(line);
+        if (!result) {
+            return result;
+        }
+    }
+
+    inputFile.close();
+
+    container.PrintGrid();
 
     return {};
 }

@@ -15,6 +15,8 @@ class ControlNode : public Pathable {
         std::vector<Pathable*> GetNeighbors();
 
         std::string GetKey() const;
+        int GetCost() const;
+        char GetCharacterRepresentation() const;
         
         int GetGCost() const;
         int GetHCost(Pathable* target) const;

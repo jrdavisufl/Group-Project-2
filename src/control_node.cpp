@@ -1,7 +1,9 @@
+#include <cmath>
 #include <vector>
 
 #include "control_node_container.hpp"
 #include "control_node.hpp"
+#include "pathable.hpp"
 
 ControlNode::ControlNode(ControlNodeContainer* container, int x, int y, int cost) {
     this->x = x;
@@ -47,6 +49,27 @@ std::string ControlNode::GetKey() const {
     return ControlNode::GetKey(this->x, this->y);
 }
 
+int ControlNode::GetCost() const {
+    return this->cost;
+}
+
+char ControlNode::GetCharacterRepresentation() const {
+    if (this == container->start) {
+        return PATHABLE_START_CHARACTER;
+    }
+
+    if (this == container->target) {
+        return PATHABLE_TARGET_CHARACTER;
+    }
+
+    // switch (this->cost) {
+    //     case 1:
+    //         return '0';
+    // }
+
+    return '0';
+}
+
 int ControlNode::GetGCost() const {
     return this->g;
 }
@@ -56,8 +79,10 @@ int ControlNode::GetHCost(Pathable* target) const {
         return 0;
     }
 
-    int a = target->x - this->x;
-    int b = target->y - this->y;
+    auto* concreteNode = static_cast<ControlNode*>(target);
+
+    int a = concreteNode->x - this->x;
+    int b = concreteNode->y - this->y;
 
     a *= a;
     b *= b;
