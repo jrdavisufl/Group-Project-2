@@ -9,7 +9,10 @@ Graph createGraph(){
     std::getline(std::cin, start);
     std::getline(std::cin, end);
 
-    std::string command = "python3 getNodes.py \"" + start + "\" \"" + end + "\"";
+    std::string command = 
+        "\"/opt/anaconda3/envs/ox/bin/python\" "
+        "\"src/getNodes.py\" \"" + start + "\" \"" + end + "\"";
+
     system(command.c_str());
 
     Graph graph;

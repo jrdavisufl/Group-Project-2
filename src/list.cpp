@@ -1,8 +1,8 @@
 #include "list.hpp"
 
 void Graph::addNode(double latitude, double longitude, long long id){
-    nodes[id] = Node(latitude, longitude, id);
-    adjacencyList[id] = {};
+    nodes.emplace(id, Node(latitude, longitude, id));
+    adjacencyList.emplace(id, vector<Edge>{});
 }
 
 void Graph::addEdge(long long sourceID, long long destination, double distance, string name){
@@ -20,9 +20,9 @@ void Graph::loadNodes(){
         string strID, strLat, strLon;
 
 
-        getline(ss, strID, ',');
-        getline(ss, strLat, ',');
-        getline(ss, strLon, ',');
+        getline(ss, strID, '\t');
+        getline(ss, strLat, '\t');
+        getline(ss, strLon, '\t');
 
         long long id = stoll(strID);
         double lat = stod(strLat);
@@ -33,7 +33,7 @@ void Graph::loadNodes(){
 }
 
 void Graph::loadEdges(){
-    ifstream file("data/nodes.csv");
+    ifstream file("data/edges.csv");
     string line;
 
     getline(file, line);
@@ -43,10 +43,10 @@ void Graph::loadEdges(){
         string strSource, strDest, strDist, name;
 
 
-        getline(ss, strSource, ',');
-        getline(ss, strDest, ',');
-        getline(ss, strDist, ',');
-        getline(ss, name, ',');
+        getline(ss, strSource, '\t');
+        getline(ss, strDest, '\t');
+        getline(ss, strDist, '\t');
+        getline(ss, name);
 
         long long source = stoll(strSource);
         long long destination = stoll(strDest);
