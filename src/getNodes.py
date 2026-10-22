@@ -1,9 +1,10 @@
 import osmnx as ox
 import csv
+import sys
 from geopy.geocoders import Nominatim
 
 # Using a starting location and destination, this function retrieves the map bounds 
-def getCoords(start: str, end : str) -> list:
+def getCoords(start: str, end: str) -> list:
     geolocator = Nominatim(user_agent="gpsOptimization")
     margin: float = 0.01
 
@@ -60,6 +61,13 @@ def makeCSV(start: str, end : str) :
                 streetName = ", ".join(streetName)
 
             writer.writerow([source, destination, data.get("length", 0), streetName])
+
+
+if __name__ == "__main__":
+    start = sys.argv[1]
+    end = sys.argv[2]
+
+    makeCSV(start, end)
 
 # plottting graph test
 # ox.plot_graph(
