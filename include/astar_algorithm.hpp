@@ -37,12 +37,19 @@ std::vector<T*> GetAstarPath(Pathable* start, Pathable* target) {
     std::vector<T*> outgoing = {};
     std::priority_queue<Pathable*, std::vector<Pathable*>, CompareNodes> openMap;
     ankerl::unordered_dense::map<Pathable*, bool> closedMap;
+    ankerl::unordered_dense::map<Pathable*, bool> visited;
 
+    start->Reset();
     openMap.push(start);
+    visited[start] = true;
 
     while (!openMap.empty()) {
         Pathable* curr = openMap.top();
         openMap.pop();
+
+        if (closedMap.contains(curr)) {
+            continue;
+        }
 
         if (curr == target) {
             ConstructBackwardsPath(outgoing, start, target);
@@ -53,12 +60,22 @@ std::vector<T*> GetAstarPath(Pathable* start, Pathable* target) {
 
         auto neighbors = curr->GetNeighbors();
         for (size_t i = 0; i < neighbors.size(); ++i) {
-            if (closedMap.contains(neighbors[i])) {
+            Pathable* neighbor = neighbors[i];
+            if (closedMap.contains(neighbor)) {
                 continue;
             }
 
-            neighbors[i]->SetParent(curr);
-            openMap.push(neighbors[i]);
+            int candidateCost = curr->GetGCost() + neighbor->GetCost();
+            bool isUnvisited = (!visited.contains(neighbor) && neighbor != start);
+            if (isUnvisited || candidateCost < neighbor->GetGCost()) {
+                if (!visited.contains(neighbor)) {
+                    neighbor->Reset();
+                }
+
+                neighbor->SetParent(curr);
+                visited[neighbor] = true;
+                openMap.push(neighbor);
+            }
         }
     }
 

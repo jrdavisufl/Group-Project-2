@@ -17,12 +17,14 @@ class ControlNode : public Pathable {
         void SetParent(Pathable* parent);
 
         std::string GetKey() const;
-        int GetCost() const;
         char GetCharacterRepresentation(bool isPath = false) const;
         
+        int GetCost() const;
         int GetGCost() const;
         int GetHCost() const;
         int GetFCost() const;
+
+        void Reset();
         
         static std::string GetKey(int x, int y);
 
@@ -35,9 +37,6 @@ class ControlNode : public Pathable {
         int y = 0;
 
         int cost = 0;
-
-        // reset A* values
-        void reset();
 
         // A* pathfinding variables
         int g = 0;

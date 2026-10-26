@@ -111,7 +111,7 @@ int ControlNode::GetFCost() const {
     return this->GetGCost() + this->GetHCost();
 }
 
-void ControlNode::reset() {
+void ControlNode::Reset() {
     this->g = 0;
     this->parent = nullptr;
 }
