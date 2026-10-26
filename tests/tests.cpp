@@ -1,4 +1,4 @@
-#include "../src/dijkstra.hpp"
+#include "dijkstra.hpp"
 #include <cassert>
 #include <cmath>
 #include <stdexcept>
