@@ -1,28 +1,29 @@
+#include <expected>
 #include <iostream>
 #include <string>
-#include <cstdlib>
-#include "list.hpp"
+#include <vector>
 
-Graph createGraph(){
-    std::string start, end;
+#include "core.hpp"
+#include "error.hpp"
 
-    std::getline(std::cin, start);
-    std::getline(std::cin, end);
+int main(int argc, char* argv[]) {
 
-    std::string command = 
-        "\"/opt/anaconda3/envs/ox/bin/python\" "
-        "\"src/getNodes.py\" \"" + start + "\" \"" + end + "\"";
+    if (argc == 1) {
+        std::cerr << "No arguments passed" << std::endl;
+        return 1;
+    }
 
-    system(command.c_str());
+    // parse arguments into nicer vector format
+    std::vector<std::string> args = {};
+    for (int i = 1; i < argc; ++i) {
+        args.push_back(argv[i]);
+    }
 
-    Graph graph;
-    graph.loadNodes();
-    graph.loadEdges();
-
-    return graph;
-}
-
-int main() {
-    std::cout << "test" << std::endl;
+    auto result = ParseMainInputs(args);
+    if (!result) {
+        std::cerr << result.error() << std::endl;
+        return 1;
+    }
+    
     return 0;
 }
