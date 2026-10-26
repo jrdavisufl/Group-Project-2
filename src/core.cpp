@@ -104,3 +104,22 @@ std::expected<void, Error> ParseMainInputs(std::vector<std::string>& inputs) {
 
     return std::unexpected(Error(ErrorType::InvalidInput, "Invalid initializer flag"));
 }
+
+// Graph createGraph(){
+//     std::string start, end;
+
+//     std::getline(std::cin, start);
+//     std::getline(std::cin, end);
+
+//     std::string command = 
+//         "\"/opt/anaconda3/envs/ox/bin/python\" "
+//         "\"src/getNodes.py\" \"" + start + "\" \"" + end + "\"";
+
+//     system(command.c_str());
+
+//     Graph graph;
+//     graph.loadNodes();
+//     graph.loadEdges();
+
+//     return graph;
+// }
