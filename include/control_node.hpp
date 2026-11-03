@@ -3,26 +3,32 @@
 #include <unordered_map>
 #include <string>
 
-#include "pathable.hpp"
+constexpr char PATHABLE_START_CHARACTER = 'A';
+constexpr char PATHABLE_TARGET_CHARACTER = 'B';
 
 class ControlNodeContainer;
 
-class ControlNode : public Pathable {
+class ControlNode {
     public:
         ControlNode(ControlNodeContainer* container, int x, int y, int cost = 1);
-        bool operator>(const Pathable& other) const;
+        bool operator>(const ControlNode& other) const;
 
-        std::vector<Pathable*> GetNeighbors();
-        Pathable* GetParent();
-        void SetParent(Pathable* parent);
+        void GetNeighbors(std::vector<ControlNode*>& buffer);
+        ControlNode* GetParent();
+        void SetParent(ControlNode* parent, double distance = 0.0);
 
         std::string GetKey() const;
         char GetCharacterRepresentation(bool isPath = false) const;
+
+        uint64_t GetId() const;
         
-        int GetCost() const;
-        int GetGCost() const;
-        int GetHCost() const;
-        int GetFCost() const;
+        double GetCost(ControlNode* other = nullptr) const;
+        double GetGCost() const;
+        double GetHCost() const;
+        double GetFCost() const;
+
+        double GetLatitude() const;
+        double GetLongitude() const;
 
         void Reset();
         
@@ -40,5 +46,5 @@ class ControlNode : public Pathable {
 
         // A* pathfinding variables
         int g = 0;
-        Pathable* parent = nullptr;
+        ControlNode* parent = nullptr;
 };

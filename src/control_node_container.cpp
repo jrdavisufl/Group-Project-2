@@ -49,11 +49,11 @@ void ControlNodeContainer::PrintGrid(ankerl::unordered_dense::map<ControlNode*, 
 }
 
 void ControlNodeContainer::PrintAstarGrid() {
-    auto astarPath = GetAstarPath<ControlNode>(this->start, this->target);
+    auto result = GetAstarPath<ControlNode>(this->start, this->target);
     ankerl::unordered_dense::map<ControlNode*, bool> path = {};
 
-    for (int i = 0; i < astarPath.size(); ++i) {
-        path[astarPath[i]] = true;
+    for (int i = 0; i < result.path.size(); ++i) {
+        path[result.path[i]] = true;
     }
 
     this->PrintGrid(path);
