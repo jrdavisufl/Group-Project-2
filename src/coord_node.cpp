@@ -6,10 +6,19 @@
 #include "data_parser.hpp"
 #include "pathable.hpp"
 
-CoordNode::CoordNode(double latitude, double longitude, DataBucket* bucket) {
+CoordNode::CoordNode(DataBucket* bucket, uint64_t id, double latitude, double longitude) {
+    this->bucket = bucket;
+    this->id = id;
     this->latitude = latitude;
     this->longitude = longitude;
-    this->bucket = bucket;
+}
+
+double CoordNode::GetLatitude() const {
+    return this->latitude;
+}
+
+double CoordNode::GetLongitude() const {
+    return this->longitude;
 }
 
 // pathable implementations
@@ -20,7 +29,7 @@ bool CoordNode::operator>(const Pathable& other) const {
 std::vector<Pathable*> CoordNode::GetNeighbors() {
     std::vector<Pathable*> outgoing = {};
     for (int i = 0; i < neighborIds.size(); ++i) {
-        auto result = this->bucket->GetNode(neighborIds[i]);
+        auto result = this->bucket->dataParser->GetNode(neighborIds[i]);
         if (!result) {
             continue;
         }
@@ -40,7 +49,11 @@ uint64_t CoordNode::GetId() const {
 }
 
 void CoordNode::SetParent(Pathable* parent) {
-    auto result = this->bucket->dataParser->GetEdge(this->id, parent->GetId());
+    if (parent == nullptr) {
+        return;
+    }
+
+    auto result = this->bucket->dataParser->GetEdge(parent->GetId(), this->id);
 
     // some kind of error - most likely not a valid edge
     if (!result) {
@@ -52,7 +65,11 @@ void CoordNode::SetParent(Pathable* parent) {
 }
 
 double CoordNode::GetCost(Pathable* other) const {
-    auto result = this->bucket->dataParser->GetEdge(this->id, parent->GetId());
+    if (other == nullptr) {
+        return 0;
+    }
+
+    auto result = this->bucket->dataParser->GetEdge(this->id, other->GetId());
 
     // some kind of error - most likely not a valid edge
     if (!result) {

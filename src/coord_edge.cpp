@@ -3,10 +3,23 @@
 
 #include "coord_edge.hpp"
 
-CoordEdge::CoordEdge(std::string streetName, uint64_t startId, uint64_t endId) {
+CoordEdge::CoordEdge(std::string streetName, uint64_t startId, uint64_t endId, double distance) {
     this->streetName = streetName;
     this->startId = startId;
     this->endId = endId;
+    this->distance = distance;
+}
+
+std::string CoordEdge::GetStreetName() const {
+    return this->streetName;
+}
+
+uint64_t CoordEdge::GetStartId() const {
+    return this->startId;
+}
+
+uint64_t CoordEdge::GetEndId() const {
+    return this->endId;
 }
 
 double CoordEdge::GetDistance() {
@@ -14,15 +27,9 @@ double CoordEdge::GetDistance() {
 }
 
 uint64_t CoordEdge::GetEdgeIndex(uint64_t startNodeId, uint64_t endNodeId) {
-    if (startNodeId < endNodeId) {
-        std::swap(startNodeId, endNodeId);
-    }
-
-    uint64_t startLocal = startNodeId & 0xFFFFFF;
-    uint64_t endLocal = endNodeId & 0xFFFFFF;
-
-    uint64_t spatialBucket = startNodeId >> 24;
-    uint64_t bucketId16 = spatialBucket & 0xFFFF;
+    uint64_t startLocal = (startNodeId >> 16) & 0xFFFFFF;
+    uint64_t endLocal = (endNodeId >> 16) & 0xFFFFFF;
+    uint64_t bucketId16 = startNodeId & 0xFFFF;
 
     // Bit-pack into a single 64-bit integer:
     // Bits 48-63: Bucket ID

@@ -10,7 +10,10 @@ class DataBucket;
 class CoordNode : public Pathable {
     public:
 
-        CoordNode(double latitude, double longitude, DataBucket* bucket);
+        CoordNode(DataBucket* bucket, uint64_t id, double latitude, double longitude);
+
+        double GetLatitude() const;
+        double GetLongitude() const;
 
         // pathable implementations
         bool operator>(const Pathable& other) const;

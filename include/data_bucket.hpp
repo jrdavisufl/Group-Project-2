@@ -15,10 +15,14 @@ class DataParser;
 class DataBucket {
     public:
 
-        DataBucket(DataParser* dataParser, uint32_t id, std::string filePath, bool autoInitialize = true);
+        DataBucket(DataParser* dataParser, uint32_t id, bool autoInitialize = true);
         ~DataBucket();
 
-        std::expected<void, Error> InitializeDataFromPath(std::string filePath);
+        std::expected<void, Error> InitializeDataFromCache();
+        std::expected<void, Error> SaveDataToCache();
+
+        std::expected<uint64_t, Error> AddNode(double latitude, double longitude);
+        std::expected<void, Error> AddEdge(std::string streetName, uint64_t stardId, uint64_t endId, double distance);
 
         std::expected<CoordNode*, Error> GetNode(uint64_t nodeId) const;
         std::expected<CoordEdge*, Error> GetEdge(uint64_t startId, uint64_t endId) const;
@@ -40,8 +44,8 @@ class DataBucket {
 
         uint32_t id = 0;
         bool initialized = false;
-        std::string filePath = "";
         size_t totalNodes = 0;
+        size_t totalEdges = 0;
 
         void clearData();
 };

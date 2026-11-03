@@ -7,10 +7,12 @@
 enum class ErrorType {
     Empty,
     Exception,
+    FileNotFound,
     InvalidInput,
     NotFound,
     OutOfBounds,
-    DuplicateValue
+    DuplicateValue,
+    FileError
 };
 
 // Error class returned by all outward facing methods that have a chance at failing

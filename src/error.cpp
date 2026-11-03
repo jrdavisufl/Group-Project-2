@@ -42,10 +42,13 @@ std::ostream& operator<<(std::ostream& os, const Error& e) {
 std::string Error::ErrorTypeToString(ErrorType type) {
     static constexpr std::string_view names[] = {
         "Empty",
+        "Exception",
+        "FileNotFound",
         "InvalidInput",
         "NotFound",
         "OutOfBounds",
-        "DuplicateValue"
+        "DuplicateValue",
+        "FileError"
     };
 
     auto index = static_cast<size_t>(type);

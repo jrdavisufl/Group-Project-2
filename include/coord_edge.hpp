@@ -8,8 +8,11 @@ class DataBucket;
 class CoordEdge {
     public:
 
-        CoordEdge(std::string streetName, uint64_t startId, uint64_t endId);
+        CoordEdge(std::string streetName, uint64_t startId, uint64_t endId, double distance);
 
+        std::string GetStreetName() const;
+        uint64_t GetStartId() const;
+        uint64_t GetEndId() const;
         double GetDistance();
 
         static uint64_t GetEdgeIndex(uint64_t startNodeId, uint64_t endNodeId);

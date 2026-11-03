@@ -18,7 +18,7 @@ void ConstructBackwardsPath(std::vector<T*>& input, Pathable* start, Pathable* t
         return;
     }
 
-    Pathable* curr = target->GetParent();
+    Pathable* curr = target;
     while (curr != nullptr && curr != start) {
         T* out = static_cast<T*>(curr);
         input.push_back(out);

@@ -6,6 +6,7 @@
 
 #include "control_node_container.hpp"
 #include "core.hpp"
+#include "data_parser.hpp"
 #include "dijkstra.hpp"
 #include "error.hpp"
 
@@ -100,6 +101,9 @@ std::expected<void, Error> ParseMainInputs(std::vector<std::string>& inputs) {
         return ConstructPathFromFile(inputs.size() > 1 ? inputs[1] : "");
     } else if (inputs[0] == "dijkstra") {
         return RunDijkstraTest();
+    } else if (inputs[0] == "prime_data") {
+        DataParser p(".data");
+        return p.ContructDataFromPath();
     }
 
     return std::unexpected(Error(ErrorType::InvalidInput, "Invalid initializer flag"));
