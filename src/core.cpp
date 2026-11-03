@@ -145,7 +145,7 @@ std::expected<void, Error> ParseMainInputs(std::vector<std::string>& inputs) {
         return ConstructPathFromFile(inputs.size() > 1 ? inputs[1] : "");
     } else if (inputs[0] == "dijkstra") {
         return RunDijkstraTest();
-    } else if (inputs[0] == "prime_data") {
+    } else if (inputs[0] == "stage_data") {
         DataParser p(".data", false);
         return p.ContructDataFromPath();
     } else if (inputs[0] == "get_closest_node") {
