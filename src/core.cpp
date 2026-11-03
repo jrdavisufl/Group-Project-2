@@ -128,8 +128,30 @@ std::expected<void, Error> GetPath(std::vector<std::string>& inputs) {
         return std::unexpected(Error(ErrorType::InvalidInput, "Coordinates must be numbers"));
     }
 
-    DataParser p(".data");
-    return p.PrintAlgorithmResponseFromCoords(lat1, lon1, lat2, lon2);
+    {
+        DataParser p(".data");
+
+        std::cout << std::endl;
+        std::cout << "===============" << std::endl;
+        std::cout << "==== Astar ====" << std::endl;
+        std::cout << "===============" << std::endl;
+        std::cout << std::endl;
+        auto response = p.PrintAlgorithmResponseFromCoords(lat1, lon1, lat2, lon2);
+        if (!response) {
+            return std::unexpected(response.error());
+        }
+    }
+
+    {
+        DataParser p(".data");
+
+        std::cout << std::endl;
+        std::cout << "==================" << std::endl;
+        std::cout << "==== Dijkstra ====" << std::endl;
+        std::cout << "==================" << std::endl;
+        std::cout << std::endl;
+        return p.PrintAlgorithmResponseFromCoords(lat1, lon1, lat2, lon2, AlgorithmType::DijkstraAlgorithm);
+    }
 }
 
 std::expected<void, Error> ParseMainInputs(std::vector<std::string>& inputs) {

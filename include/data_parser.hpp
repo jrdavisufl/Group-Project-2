@@ -11,6 +11,11 @@
 #include "data_bucket.hpp"
 #include "error.hpp"
 
+enum AlgorithmType {
+    AstarAlgorithm,
+    DijkstraAlgorithm
+};
+
 constexpr std::string ROOT_DATA_DIRECTORY = ".data/";
 constexpr double DEFAULT_RESOLUTION = 0.15;
 
@@ -36,7 +41,7 @@ class DataParser {
         std::expected<void, Error> SaveMetaToCache();
         std::expected<void, Error> InitializeMetaFromCache();
 
-        std::expected<void, Error> PrintAlgorithmResponseFromCoords(double lat1, double long1, double lat2, double long2);
+        std::expected<void, Error> PrintAlgorithmResponseFromCoords(double lat1, double long1, double lat2, double long2, AlgorithmType algorithmType = AlgorithmType::AstarAlgorithm);
 
         // runs beforehand to initialize the data
         // sets it in the .build/cache directory
@@ -60,6 +65,7 @@ class DataParser {
         std::expected<void, Error> parseNodes(ankerl::unordered_dense::map<uint64_t, uint64_t>& idMap);
         std::expected<void, Error> parseEdges(ankerl::unordered_dense::map<uint64_t, uint64_t>& idMap);
 
+        AlgorithmType algorithmType = AlgorithmType::AstarAlgorithm;
         CoordNode* start = nullptr;
         CoordNode* end = nullptr;
 };

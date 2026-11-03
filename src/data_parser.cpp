@@ -333,7 +333,7 @@ std::expected<void, Error> DataParser::InitializeMetaFromCache() {
     return {};
 }
 
-std::expected<void, Error> DataParser::PrintAlgorithmResponseFromCoords(double lat1, double long1, double lat2, double long2) {
+std::expected<void, Error> DataParser::PrintAlgorithmResponseFromCoords(double lat1, double long1, double lat2, double long2, AlgorithmType algorithmType) {
     auto snapStart = std::chrono::steady_clock::now();
 
     auto resultA = GetClosestNodeFromCoords(lat1, long1);
@@ -345,6 +345,10 @@ std::expected<void, Error> DataParser::PrintAlgorithmResponseFromCoords(double l
     if (!resultB) {
         return std::unexpected(resultB.error());
     }
+
+    this->algorithmType = algorithmType;
+    this->start = *resultA;
+    this->end = *resultB;
 
     double snapSeconds = std::chrono::duration<double>(std::chrono::steady_clock::now() - snapStart).count();
 

@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 
+#include "astar_algorithm.hpp"
 #include "coord_node.hpp"
 #include "coord_edge.hpp"
 #include "data_bucket.hpp"
@@ -56,18 +57,16 @@ bool CoordNode::operator>(const CoordNode& other) const {
     return this->GetFCost() > other.GetFCost();
 }
 
-std::vector<CoordNode*> CoordNode::GetNeighbors() {
-    std::vector<CoordNode*> outgoing = {};
+void CoordNode::GetNeighbors(std::vector<CoordNode*>& buffer) {
+    buffer.clear();
     for (int i = 0; i < edges.size(); ++i) {
         auto result = this->bucket->dataParser->GetNode(edges[i].endId);
         if (!result) {
             continue;
         }
 
-        outgoing.push_back(*result);
+        buffer.push_back(*result);
     }
-
-    return outgoing;
 }
 
 CoordNode* CoordNode::GetParent() {
@@ -112,19 +111,16 @@ double CoordNode::GetGCost() const {
 }
 
 double CoordNode::GetHCost() const {
-    const double cosLat = std::cos(latitude * M_PI / 180.0);
-    auto distanceTo = [&](double lat, double lon) -> double {
-        double dLat = lat - latitude;
-        double dLon = (lon - longitude) * cosLat;
-        return dLat * dLat + dLon * dLon;
-    };
+    if (this->bucket->dataParser->algorithmType == AlgorithmType::DijkstraAlgorithm) {
+        return 0.0;
+    }
 
     CoordNode* end = bucket->dataParser->end;
     if (end == nullptr) {
         return 0.0;
     }
 
-    return distanceTo(end->GetLatitude(), end->GetLongitude());
+    return HaversineMeters(this, end);
 }
 
 double CoordNode::GetFCost() const {

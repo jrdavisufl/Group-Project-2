@@ -13,7 +13,7 @@ class ControlNode {
         ControlNode(ControlNodeContainer* container, int x, int y, int cost = 1);
         bool operator>(const ControlNode& other) const;
 
-        std::vector<ControlNode*> GetNeighbors();
+        void GetNeighbors(std::vector<ControlNode*>& buffer);
         ControlNode* GetParent();
         void SetParent(ControlNode* parent, double distance = 0.0);
 

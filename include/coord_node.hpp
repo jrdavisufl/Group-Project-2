@@ -25,7 +25,7 @@ class CoordNode {
         // pathable implementations
         bool operator>(const CoordNode& other) const;
 
-        std::vector<CoordNode*> GetNeighbors();
+        void GetNeighbors(std::vector<CoordNode*>& buffer);
         CoordNode* GetParent();
 
         uint64_t GetId() const;

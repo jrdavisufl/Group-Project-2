@@ -96,6 +96,7 @@ AstarAlgorithmRespnse<T> GetAstarPath(T* start, T* target) {
     response.nodesPushedToHeap++;
     response.peakHeapSize = 1;
 
+    std::vector<T*> neighbors = {};
     while (!openMap.empty()) {
         T* curr = openMap.top().second;
         openMap.pop();
@@ -117,7 +118,7 @@ AstarAlgorithmRespnse<T> GetAstarPath(T* start, T* target) {
 
         closedSet.insert(curr);
 
-        auto neighbors = curr->GetNeighbors();
+        curr->GetNeighbors(neighbors);
         for (size_t i = 0; i < neighbors.size(); ++i) {
             T* neighbor = neighbors[i];
             response.edgesExamined++;

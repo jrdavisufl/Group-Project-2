@@ -17,27 +17,29 @@ bool ControlNode::operator>(const ControlNode& other) const {
     return this->GetFCost() > other.GetFCost();
 }
 
-std::vector<ControlNode*> ControlNode::GetNeighbors() {
-    std::vector<ControlNode*> outgoing = {};
+void ControlNode::GetNeighbors(std::vector<ControlNode*>& buffer) {
+    buffer.clear();
 
     auto tryAdd = [&](int x, int y) {
         auto node = container->GetNode(x, y);
         if (node == nullptr) return;
 
-        outgoing.push_back(node);
+        buffer.push_back(node);
     };
 
     tryAdd(x - 1, y);
     tryAdd(x + 1, y);
     tryAdd(x, y - 1);
     tryAdd(x, y + 1);
-
-    return outgoing;
 }
 
 void ControlNode::SetParent(ControlNode* parent, double distance) {
+    if (parent == nullptr || distance <= 0.0) {
+        return;
+    }
+
     this->parent = parent;
-    this->g = parent->GetGCost() + this->cost;
+    this->g = parent->GetGCost() + distance;
 }
 
 ControlNode* ControlNode::GetParent() {
