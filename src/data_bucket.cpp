@@ -39,7 +39,6 @@ std::expected<void, Error> DataBucket::InitializeDataFromCache() {
         return file.good();
     };
 
-    // load nodes
     std::string nodePath = (cacheDir / (std::to_string(id) + "_nodes.bin")).string();
     std::ifstream nodeFile(nodePath, std::ios::binary);
 
@@ -56,10 +55,12 @@ std::expected<void, Error> DataBucket::InitializeDataFromCache() {
         uint64_t nodeId = 0;
         double lat = 0.0;
         double lon = 0.0;
+        uint64_t edgeCount = 0;
 
         if (!readFile(nodeFile, &nodeId, sizeof(nodeId)) ||
             !readFile(nodeFile, &lat, sizeof(lat)) ||
-            !readFile(nodeFile, &lon, sizeof(lon))) 
+            !readFile(nodeFile, &lon, sizeof(lon)) ||
+            !readFile(nodeFile, &edgeCount, sizeof(edgeCount)))
         {
             return std::unexpected(Error(ErrorType::FileError, "Failed reading node data"));
         }
@@ -68,8 +69,23 @@ std::expected<void, Error> DataBucket::InitializeDataFromCache() {
             return std::unexpected(Error(ErrorType::DuplicateValue, "Duplicate node ID in cache"));
         }
 
-        nodeMap[nodeId] = new CoordNode(this, nodeId, lat, lon);
-        totalNodes++;
+        CoordNode* node = new CoordNode(this, nodeId, lat, lon);
+        nodeMap[nodeId] = node;
+
+        for (uint64_t j = 0; j < edgeCount; ++j) {
+            uint64_t endId = 0;
+            double distance = 0.0;
+            uint32_t nameId = 0;
+
+            if (!readFile(nodeFile, &endId, sizeof(endId)) ||
+                !readFile(nodeFile, &distance, sizeof(distance)) ||
+                !readFile(nodeFile, &nameId, sizeof(nameId)))
+            {
+                return std::unexpected(Error(ErrorType::FileError, "Failed reading edge data"));
+            }
+
+            node->AddEdgeById(nameId, endId, distance);
+        }
     }
 
     nodeFile.close();
@@ -78,61 +94,10 @@ std::expected<void, Error> DataBucket::InitializeDataFromCache() {
         return std::unexpected(Error(ErrorType::FileError, "Failed closing node cache"));
     }
 
-    // load edges
-    std::string edgePath = (cacheDir / (std::to_string(id) + "_edges.bin")).string();
-    std::ifstream edgeFile(edgePath, std::ios::binary);
-
-    if (!edgeFile.is_open()) {
-        return std::unexpected(Error(ErrorType::FileError, "Failed to open edge cache"));
-    }
-
-    uint64_t edgeCount = 0;
-
-    if (!readFile(edgeFile, &edgeCount, sizeof(edgeCount))) {
-        return std::unexpected(Error(ErrorType::FileError, "Failed reading edge count"));
-    }
-
-    for (uint64_t i = 0; i < edgeCount; ++i) {
-        uint64_t edgeId = 0;
-        uint64_t startId = 0;
-        uint64_t endId = 0;
-        double distance = 0.0;
-        uint64_t nameLength = 0;
-
-        if (!readFile(edgeFile, &edgeId, sizeof(edgeId)) ||
-            !readFile(edgeFile, &startId, sizeof(startId)) ||
-            !readFile(edgeFile, &endId, sizeof(endId)) ||
-            !readFile(edgeFile, &distance, sizeof(distance)) ||
-            !readFile(edgeFile, &nameLength, sizeof(nameLength))) 
-        {
-            return std::unexpected(Error(ErrorType::FileError, "Failed reading edge data"));
-        }
-
-        std::string streetName(nameLength, '\0');
-
-        if (nameLength > 0 && !readFile(edgeFile, streetName.data(), nameLength)) {
-            return std::unexpected(Error(ErrorType::FileError, "Failed reading street name"));
-        }
-
-        if (edgeMap.contains(edgeId)) {
-            return std::unexpected(Error(ErrorType::DuplicateValue, "Duplicate edge ID in cache"));
-        }
-
-        edgeMap[edgeId] = new CoordEdge(streetName, startId, endId, distance);
-        totalEdges++;
-    }
-
-    edgeFile.close();
-
-    if (edgeFile.fail()) {
-        return std::unexpected(Error(ErrorType::FileError, "Failed closing edge cache"));
-    }
-
     this->initialized = true;
 
     return {};
 }
-
 
 std::expected<void, Error> DataBucket::SaveDataToCache() {
     if (!this->initialized) {
@@ -158,20 +123,21 @@ std::expected<void, Error> DataBucket::SaveDataToCache() {
         return file.good();
     };
 
-    // save nodes
     std::string nodePath = (cacheDir / (std::to_string(id) + "_nodes.bin")).string();
     std::ofstream nodeFile(nodePath, std::ios::binary | std::ios::trunc);
 
     if (!nodeFile.is_open()) {
-        return std::unexpected(
-            Error(ErrorType::FileError, "Failed to open node cache")
-        );
+        return std::unexpected(Error(ErrorType::FileError, "Failed to open node cache"));
     }
 
-    if (!writeFile(nodeFile, &nodeMap.size(), sizeof(nodeMap.size()))) {
-        return std::unexpected(
-            Error(ErrorType::FileError, "Failed writing node count")
-        );
+    // count only non-null nodes so the header always matches what is written
+    uint64_t nodeCount = 0;
+    for (const auto& [nodeId, nodePtr] : nodeMap) {
+        if (nodePtr) nodeCount++;
+    }
+
+    if (!writeFile(nodeFile, &nodeCount, sizeof(nodeCount))) {
+        return std::unexpected(Error(ErrorType::FileError, "Failed writing node count"));
     }
 
     for (const auto& [nodeId, nodePtr] : nodeMap) {
@@ -179,15 +145,28 @@ std::expected<void, Error> DataBucket::SaveDataToCache() {
 
         double lat = nodePtr->GetLatitude();
         double lon = nodePtr->GetLongitude();
+        const std::vector<CoordEdge>& edges = nodePtr->GetEdges();
+        uint64_t edgeCount = edges.size();
 
         if (!writeFile(nodeFile, &nodeId, sizeof(nodeId)) ||
             !writeFile(nodeFile, &lat, sizeof(lat)) ||
-            !writeFile(nodeFile, &lon, sizeof(lon))) 
+            !writeFile(nodeFile, &lon, sizeof(lon)) ||
+            !writeFile(nodeFile, &edgeCount, sizeof(edgeCount)))
         {
+            return std::unexpected(Error(ErrorType::FileError, "Failed writing node data"));
+        }
 
-            return std::unexpected(
-                Error(ErrorType::FileError, "Failed writing node data")
-            );
+        for (const CoordEdge& edge : edges) {
+            uint64_t endId = edge.endId;
+            double distance = edge.distance;
+            uint32_t nameId = edge.nameId;
+
+            if (!writeFile(nodeFile, &endId, sizeof(endId)) ||
+                !writeFile(nodeFile, &distance, sizeof(distance)) ||
+                !writeFile(nodeFile, &nameId, sizeof(nameId)))
+            {
+                return std::unexpected(Error(ErrorType::FileError, "Failed writing edge data"));
+            }
         }
     }
 
@@ -196,52 +175,11 @@ std::expected<void, Error> DataBucket::SaveDataToCache() {
         return std::unexpected(Error(ErrorType::FileError, "Failed closing node cache"));
     }
 
-    // edges
-    std::string edgePath = (cacheDir / (std::to_string(id) + "_edges.bin")).string();
-    std::ofstream edgeFile(edgePath, std::ios::binary | std::ios::trunc);
-
-    if (!edgeFile.is_open()) {
-        return std::unexpected(Error(ErrorType::FileError, "Failed to open edge cache"));
-    }
-
-    if (!writeFile(edgeFile, &edgeMap.size(), sizeof(edgeMap.size()))) {
-        return std::unexpected(Error(ErrorType::FileError, "Failed writing edge count"));
-    }
-
-    for (const auto& [edgeId, edgePtr] : edgeMap) {
-        if (!edgePtr) continue;
-
-        uint64_t startId = edgePtr->GetStartId();
-        uint64_t endId = edgePtr->GetEndId();
-
-        double distance = edgePtr->GetDistance();
-
-        uint64_t nameLength =
-            edgePtr->GetStreetName().size();
-
-        if (!writeFile(edgeFile, &edgeId, sizeof(edgeId)) ||
-            !writeFile(edgeFile, &startId, sizeof(startId)) ||
-            !writeFile(edgeFile, &endId, sizeof(endId)) ||
-            !writeFile(edgeFile, &distance, sizeof(distance)) ||
-            !writeFile(edgeFile, &nameLength, sizeof(nameLength)) ||
-            !writeFile(edgeFile, edgePtr->GetStreetName().data(), nameLength )) 
-        {
-            return std::unexpected(
-                Error(ErrorType::FileError, "Failed writing edge data")
-            );
-        }
-    }
-
-    edgeFile.close();
-    if (edgeFile.fail()) {
-        return std::unexpected(Error(ErrorType::FileError, "Failed closing edge cache"));
-    }
-
     return {};
 }
 
 std::expected<uint64_t, Error> DataBucket::AddNode(double latitude, double longitude) {
-    uint64_t localNodeIndex = totalNodes;
+    uint64_t localNodeIndex = nodeMap.size();
     uint64_t nodeId = (localNodeIndex << 16) | (static_cast<uint64_t>(id) & 0xFFFF);
 
     if (nodeMap.contains(nodeId)) {
@@ -249,23 +187,7 @@ std::expected<uint64_t, Error> DataBucket::AddNode(double latitude, double longi
     }
 
     nodeMap[nodeId] = new CoordNode(this, nodeId, latitude, longitude);
-    totalNodes++;
-
     return nodeId;
-}
-
-std::expected<void, Error> DataBucket::AddEdge(std::string streetName, uint64_t startId, uint64_t endId, double distance) {
-    uint64_t edgeId = CoordEdge::GetEdgeIndex(startId, endId);
-
-    // dedpulicate duplicates instead of throwing an error
-    if (edgeMap.contains(edgeId)) {
-        return {};
-    }
-
-    edgeMap[edgeId] = new CoordEdge(streetName, startId, endId, distance);
-    totalEdges++;
-
-    return {};
 }
 
 std::expected<CoordNode*, Error> DataBucket::GetNode(uint64_t nodeId) const {
@@ -277,22 +199,8 @@ std::expected<CoordNode*, Error> DataBucket::GetNode(uint64_t nodeId) const {
     return result->second;
 }
 
-std::expected<CoordEdge*, Error> DataBucket::GetEdge(uint64_t startId, uint64_t endId) const {
-    uint64_t idx = CoordEdge::GetEdgeIndex(startId, endId);
-    return this->GetEdge(idx);
-}
-
-std::expected<CoordEdge*, Error> DataBucket::GetEdge(uint64_t edgeId) const {
-    auto result = edgeMap.find(edgeId);
-    if (result == edgeMap.end()) {
-        return std::unexpected(Error(ErrorType::Empty, "EdgeMap is Empty"));
-    }
-
-    return result->second;
-}
-
 size_t DataBucket::GetTotalNodes() const {
-    return this->totalNodes;
+    return this->nodeMap.size();
 }
 
 // assumes the bucket id is in the back 16 bits of the 64 bit id
@@ -305,12 +213,5 @@ void DataBucket::clearData() {
         delete value;
     }
 
-    for (const auto& [key, value] : edgeMap) {
-        delete value;
-    }
-
     nodeMap.clear();
-    edgeMap.clear();
-
-    totalNodes = 0;
 }

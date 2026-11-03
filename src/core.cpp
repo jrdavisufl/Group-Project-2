@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include "astar_algorithm.hpp"
 #include "control_node_container.hpp"
 #include "core.hpp"
 #include "data_parser.hpp"
@@ -88,6 +89,49 @@ std::expected<void, Error> RunDijkstraTest() {
     return {};
 }
 
+std::expected<void, Error> GetClosestNodeFromCoords(std::vector<std::string>& inputs) {
+    if (inputs.size() != 3) {
+        return std::unexpected(Error(ErrorType::InvalidInput, "Wrong number of arguments passed"));
+    }
+    
+    DataParser p(".data");
+    
+    double lat, lon;
+    try {
+        lat = std::stod(inputs[1]);
+        lon = std::stod(inputs[2]);
+    } catch (const std::exception&) {
+        return std::unexpected(Error(ErrorType::InvalidInput, "Coordinates must be numbers"));
+    }
+
+    auto result = p.GetClosestNodeFromCoords(lat, lon);
+    if (!result) {
+        return std::unexpected(result.error());
+    }
+
+    std::cout << "Found! Closest id: " << (*result)->GetId() << " lat: " << (*result)->GetLatitude() << " long: " << (*result)->GetLongitude() << std::endl;
+    return {};
+}
+
+std::expected<void, Error> GetPath(std::vector<std::string>& inputs) {
+    if (inputs.size() != 5) {
+        return std::unexpected(Error(ErrorType::InvalidInput, "Wrong number of arguments passed"));
+    }
+
+    double lat1, lon1, lat2, lon2;
+    try {
+        lat1 = std::stod(inputs[1]);
+        lon1 = std::stod(inputs[2]);
+        lat2 = std::stod(inputs[3]);
+        lon2 = std::stod(inputs[4]);
+    } catch (const std::exception&) {
+        return std::unexpected(Error(ErrorType::InvalidInput, "Coordinates must be numbers"));
+    }
+
+    DataParser p(".data");
+    return p.PrintAlgorithmResponseFromCoords(lat1, lon1, lat2, lon2);
+}
+
 std::expected<void, Error> ParseMainInputs(std::vector<std::string>& inputs) {
     if (inputs.size() == 0) {
         return std::unexpected(Error(ErrorType::InvalidInput, "No initializer flag passed"));
@@ -102,8 +146,12 @@ std::expected<void, Error> ParseMainInputs(std::vector<std::string>& inputs) {
     } else if (inputs[0] == "dijkstra") {
         return RunDijkstraTest();
     } else if (inputs[0] == "prime_data") {
-        DataParser p(".data");
+        DataParser p(".data", false);
         return p.ContructDataFromPath();
+    } else if (inputs[0] == "get_closest_node") {
+        return GetClosestNodeFromCoords(inputs);
+    } else if (inputs[0] == "get_path") {
+        return GetPath(inputs);
     }
 
     return std::unexpected(Error(ErrorType::InvalidInput, "Invalid initializer flag"));

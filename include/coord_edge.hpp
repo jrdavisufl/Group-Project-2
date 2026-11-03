@@ -3,24 +3,12 @@
 #include <cstdint>
 #include <string>
 
-class DataBucket;
-
 class CoordEdge {
     public:
-
-        CoordEdge(std::string streetName, uint64_t startId, uint64_t endId, double distance);
-
-        std::string GetStreetName() const;
-        uint64_t GetStartId() const;
-        uint64_t GetEndId() const;
-        double GetDistance();
-
-        static uint64_t GetEdgeIndex(uint64_t startNodeId, uint64_t endNodeId);
-
-    private:
-        DataBucket* bucket = nullptr;
-        std::string streetName = "";
-
+        CoordEdge();
+        CoordEdge(uint32_t nameId, uint64_t startId, uint64_t endId, double distance);
+        
+        uint32_t nameId = 0;
         double distance = 0.0;
         uint64_t startId = 0;
         uint64_t endId = 0;

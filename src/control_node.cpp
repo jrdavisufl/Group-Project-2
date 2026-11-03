@@ -3,7 +3,6 @@
 
 #include "control_node_container.hpp"
 #include "control_node.hpp"
-#include "pathable.hpp"
 
 ControlNode::ControlNode(ControlNodeContainer* container, int x, int y, int cost) {
     this->x = x;
@@ -14,12 +13,12 @@ ControlNode::ControlNode(ControlNodeContainer* container, int x, int y, int cost
     this->container = container;
 }
 
-bool ControlNode::operator>(const Pathable& other) const {
+bool ControlNode::operator>(const ControlNode& other) const {
     return this->GetFCost() > other.GetFCost();
 }
 
-std::vector<Pathable*> ControlNode::GetNeighbors() {
-    std::vector<Pathable*> outgoing = {};
+std::vector<ControlNode*> ControlNode::GetNeighbors() {
+    std::vector<ControlNode*> outgoing = {};
 
     auto tryAdd = [&](int x, int y) {
         auto node = container->GetNode(x, y);
@@ -36,12 +35,12 @@ std::vector<Pathable*> ControlNode::GetNeighbors() {
     return outgoing;
 }
 
-void ControlNode::SetParent(Pathable* parent) {
+void ControlNode::SetParent(ControlNode* parent, double distance) {
     this->parent = parent;
     this->g = parent->GetGCost() + this->cost;
 }
 
-Pathable* ControlNode::GetParent() {
+ControlNode* ControlNode::GetParent() {
     return this->parent;
 }
 
@@ -89,7 +88,7 @@ uint64_t ControlNode::GetId() const {
     return 0;
 }
 
-double ControlNode::GetCost(Pathable* other) const {
+double ControlNode::GetCost(ControlNode* other) const {
     return static_cast<double>(this->cost);
 }
 
@@ -114,6 +113,14 @@ double ControlNode::GetHCost() const {
 
 double ControlNode::GetFCost() const {
     return this->GetGCost() + this->GetHCost();
+}
+
+double ControlNode::GetLatitude() const {
+    return 0.0;
+}
+
+double ControlNode::GetLongitude() const {
+    return 0.0;
 }
 
 void ControlNode::Reset() {

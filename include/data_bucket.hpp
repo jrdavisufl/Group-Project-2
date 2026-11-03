@@ -22,11 +22,8 @@ class DataBucket {
         std::expected<void, Error> SaveDataToCache();
 
         std::expected<uint64_t, Error> AddNode(double latitude, double longitude);
-        std::expected<void, Error> AddEdge(std::string streetName, uint64_t stardId, uint64_t endId, double distance);
 
         std::expected<CoordNode*, Error> GetNode(uint64_t nodeId) const;
-        std::expected<CoordEdge*, Error> GetEdge(uint64_t startId, uint64_t endId) const;
-        std::expected<CoordEdge*, Error> GetEdge(uint64_t edgeId) const;
 
         size_t GetTotalNodes() const;
 
@@ -40,12 +37,9 @@ class DataBucket {
         DataParser* dataParser = nullptr;
 
         ankerl::unordered_dense::map<uint64_t, CoordNode*> nodeMap;
-        ankerl::unordered_dense::map<uint64_t, CoordEdge*> edgeMap;
 
         uint32_t id = 0;
         bool initialized = false;
-        size_t totalNodes = 0;
-        size_t totalEdges = 0;
 
         void clearData();
 };

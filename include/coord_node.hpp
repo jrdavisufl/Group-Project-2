@@ -1,13 +1,14 @@
 #pragma once
 
 #include <cstdint>
+#include <string>
 #include <vector>
 
-#include "pathable.hpp"
+#include "coord_edge.hpp"
 
 class DataBucket;
 
-class CoordNode : public Pathable {
+class CoordNode {
     public:
 
         CoordNode(DataBucket* bucket, uint64_t id, double latitude, double longitude);
@@ -15,17 +16,23 @@ class CoordNode : public Pathable {
         double GetLatitude() const;
         double GetLongitude() const;
 
-        // pathable implementations
-        bool operator>(const Pathable& other) const;
+        void AddEdge(std::string& streetName, uint64_t endId, double distance);
+        void AddEdgeById(uint32_t nameId, uint64_t endId, double distance);
 
-        std::vector<Pathable*> GetNeighbors();
-        Pathable* GetParent();
+        const std::vector<CoordEdge>& GetEdges() const;
+        const CoordEdge* GetEdge(uint64_t endId) const;
+
+        // pathable implementations
+        bool operator>(const CoordNode& other) const;
+
+        std::vector<CoordNode*> GetNeighbors();
+        CoordNode* GetParent();
 
         uint64_t GetId() const;
 
-        void SetParent(Pathable* parent);
+        void SetParent(CoordNode* parent, double edgeCost);
         
-        double GetCost(Pathable* other = nullptr) const;
+        double GetCost(CoordNode* other = nullptr) const;
         double GetGCost() const;
         double GetHCost() const;
         double GetFCost() const;
@@ -34,13 +41,13 @@ class CoordNode : public Pathable {
 
     private:
         DataBucket* bucket = nullptr;
-        std::vector<uint64_t> neighborIds = {};
+        std::vector<CoordEdge> edges = {};
 
         uint64_t id = 0;
 
         double latitude = 0.0;
         double longitude = 0.0;
 
-        Pathable* parent = nullptr;
+        CoordNode* parent = nullptr;
         double g = 0.0;
 };
