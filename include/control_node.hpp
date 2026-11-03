@@ -18,11 +18,13 @@ class ControlNode : public Pathable {
 
         std::string GetKey() const;
         char GetCharacterRepresentation(bool isPath = false) const;
+
+        uint64_t GetId() const;
         
-        int GetCost() const;
-        int GetGCost() const;
-        int GetHCost() const;
-        int GetFCost() const;
+        double GetCost(Pathable* other = nullptr) const;
+        double GetGCost() const;
+        double GetHCost() const;
+        double GetFCost() const;
 
         void Reset();
         

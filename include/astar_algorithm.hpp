@@ -65,7 +65,7 @@ std::vector<T*> GetAstarPath(Pathable* start, Pathable* target) {
                 continue;
             }
 
-            int candidateCost = curr->GetGCost() + neighbor->GetCost();
+            double candidateCost = curr->GetGCost() + neighbor->GetCost(curr);
             bool isUnvisited = (!visited.contains(neighbor) && neighbor != start);
             if (isUnvisited || candidateCost < neighbor->GetGCost()) {
                 if (!visited.contains(neighbor)) {

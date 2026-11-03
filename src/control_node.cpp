@@ -53,10 +53,6 @@ std::string ControlNode::GetKey() const {
     return ControlNode::GetKey(this->x, this->y);
 }
 
-int ControlNode::GetCost() const {
-    return this->cost;
-}
-
 char ControlNode::GetCharacterRepresentation(bool isPath) const {
     if (this == container->start) {
         return PATHABLE_START_CHARACTER;
@@ -88,11 +84,20 @@ char ControlNode::GetCharacterRepresentation(bool isPath) const {
     return '0';
 }
 
-int ControlNode::GetGCost() const {
-    return this->g;
+// unused
+uint64_t ControlNode::GetId() const {
+    return 0;
 }
 
-int ControlNode::GetHCost() const {
+double ControlNode::GetCost(Pathable* other) const {
+    return static_cast<double>(this->cost);
+}
+
+double ControlNode::GetGCost() const {
+    return static_cast<double>(this->g);
+}
+
+double ControlNode::GetHCost() const {
     auto target = this->container->target;
     if (target == nullptr) {
         return 0;
@@ -104,10 +109,10 @@ int ControlNode::GetHCost() const {
     a *= a;
     b *= b;
 
-    return static_cast<int>(std::ceil(std::sqrt(a + b)));
+    return static_cast<double>(std::ceil(std::sqrt(a + b)));
 }
 
-int ControlNode::GetFCost() const {
+double ControlNode::GetFCost() const {
     return this->GetGCost() + this->GetHCost();
 }
 
