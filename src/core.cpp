@@ -8,7 +8,6 @@
 #include "control_node_container.hpp"
 #include "core.hpp"
 #include "data_parser.hpp"
-#include "dijkstra.hpp"
 #include "error.hpp"
 
 // initialize web will handle the main application with ui
@@ -52,39 +51,6 @@ std::expected<void, Error> ConstructPathFromFile(std::string fileName) {
     std::cout << std::endl << "================" << std::endl << std::endl;
     container.PrintAstarGrid();
     std::cout << std::endl;
-
-    return {};
-}
-
-std::expected<void, Error> RunDijkstraTest() {
-    // offline sanity test
-    Graph graph;
-    graph.addNode(29.0, -82.0, 1001);
-    graph.addNode(29.0, -82.0, 1002);
-    graph.addNode(29.0, -82.0, 1003);
-    graph.addNode(29.0, -82.0, 1004);
-    graph.addEdge(1001, 1002, 100, "First");
-    graph.addEdge(1001, 1003, 500, "Second");
-    graph.addEdge(1002, 1003, 50, "Third");
-    graph.addEdge(1002, 1004, 300, "Fourth");
-    graph.addEdge(1003, 1004, 80, "Fifth");
-
-    try {
-        DijkstraResult result = Dijkstra(graph, 1001, 1004);
-        if (!result.found) {
-            return std::unexpected(Error(ErrorType::NotFound, "No route found."));
-        }
-        std::cout << "Distance: " << result.totalDistance << " meters\nPath: ";
-        for (std::size_t i = 0; i < result.path.size(); ++i) {
-            if (i) std::cout << " -> ";
-            std::cout << result.path[i];
-        }
-        std::cout << "\nVertices explored: " << result.nodesExplored
-                  << "\nPeak heap entries: " << result.peakHeapSize << '\n';
-    } catch (const std::exception& ex) {
-        std::cerr << "Routing error: " << ex.what() << '\n';
-        return std::unexpected(Error(ErrorType::Exception, "Exception happened while finding path."));
-    }
 
     return {};
 }
@@ -165,8 +131,6 @@ std::expected<void, Error> ParseMainInputs(std::vector<std::string>& inputs) {
         // manual testing of algorithm on real florida addresses
     } else if (inputs[0] == "file") {
         return ConstructPathFromFile(inputs.size() > 1 ? inputs[1] : "");
-    } else if (inputs[0] == "dijkstra") {
-        return RunDijkstraTest();
     } else if (inputs[0] == "stage_data") {
         DataParser p(".data", false);
         return p.ContructDataFromPath();

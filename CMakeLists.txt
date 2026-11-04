@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(DijkstraTesting)
+project(Pathfinding)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -23,15 +23,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(Catch2)
 
-# 3. Dijkstra tests target (dijkstra_example removed)
-add_executable(dijkstra_tests
-    tests/tests.cpp
-    src/dijkstra.cpp
-    src/list.cpp
-)
-target_include_directories(dijkstra_tests PRIVATE include)
-
-# 4. Main application target (with Dijkstra and List sources added)
+# 3. Main application target
 add_executable(app
     src/main.cpp
     src/core.cpp
@@ -42,27 +34,25 @@ add_executable(app
     src/error.cpp
     src/data_bucket.cpp
     src/data_parser.cpp
-    src/dijkstra.cpp
-    src/list.cpp
-    src/data_parser.cpp
 )
+
 target_include_directories(app PRIVATE include)
 target_link_libraries(app PRIVATE unordered_dense::unordered_dense)
 set_target_properties(app PROPERTIES OUTPUT_NAME "app")
 
-# 5. Main project unit tests
+# 4. Main project unit tests
 add_executable(unit_tests
     tests/test_core.cpp
 )
+
 target_include_directories(unit_tests PRIVATE include)
-target_link_libraries(unit_tests PRIVATE 
-    Catch2::Catch2WithMain 
+target_link_libraries(unit_tests PRIVATE
+    Catch2::Catch2WithMain
     unordered_dense::unordered_dense
 )
 
-# 6. Testing configuration
+# 5. Testing configuration
 enable_testing()
 include(CTest)
 
-add_test(NAME DijkstraTests COMMAND dijkstra_tests)
 add_test(NAME UnitTests COMMAND unit_tests)
