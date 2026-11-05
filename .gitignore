@@ -36,7 +36,6 @@ CMakeCache.txt
 CMakeFiles/
 CMakeTrust.txt
 CMakeUserPresets.json
-*.cmake
 !CMakeLists.txt
 
 # Build Directories
@@ -46,3 +45,24 @@ build/
 out/
 bin/
 lib/
+
+# CLion build directories
+cmake-build-*/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Python virtual environments
+.venv/
+venv/
+
+# Local environment variables
+.env
+
+# Frontend integration backup files
+*.before_frontend
+
+# OS-generated files
+.DS_Store
+Thumbs.db

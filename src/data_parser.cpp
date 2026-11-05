@@ -5,10 +5,12 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <iomanip>
 #include <limits>
 #include <sstream>
 #include <string>
 #include <vector>
+#include <utility>
 
 #include "astar_algorithm.hpp"
 #include "coord_edge.hpp"
@@ -422,6 +424,104 @@ std::expected<void, Error> DataParser::PrintAlgorithmResponseFromCoords(double l
     std::cout << "  Snap to nodes:         " << snapSeconds << " s" << std::endl;
     std::cout << "  Total time:            " << response.totalTime << " s" << std::endl;
 
+    return {};
+}
+
+
+// Returns machine-readable route geometry and search metrics for the browser.
+// This calls the team's EXISTING A* template (with zero heuristic in Dijkstra mode).
+// A standalone Dijkstra implementation can replace that call later.
+std::expected<void, Error> DataParser::PrintRouteJSONFromCoords(
+    double lat1, double lon1, double lat2, double lon2,
+    AlgorithmType selectedAlgorithm)
+{
+    auto snapStart = std::chrono::steady_clock::now();
+    auto startResult = GetClosestNodeFromCoords(lat1, lon1);
+    if (!startResult) return std::unexpected(startResult.error());
+
+    auto endResult = GetClosestNodeFromCoords(lat2, lon2);
+    if (!endResult) return std::unexpected(endResult.error());
+
+    this->algorithmType = selectedAlgorithm;
+    this->start = *startResult;
+    this->end = *endResult;
+    double snapSeconds = std::chrono::duration<double>(
+        std::chrono::steady_clock::now() - snapStart).count();
+
+    const auto response = GetAstarPath<CoordNode>(*startResult, *endResult);
+    if (!response.pathFound) {
+        return std::unexpected(Error(ErrorType::NotFound, "No route found between those locations"));
+    }
+
+    // Build display directions by merging consecutive roads with the same name.
+    std::vector<std::pair<std::string, double>> steps;
+    for (size_t i = 0; i + 1 < response.path.size(); ++i) {
+        const CoordEdge* edge = response.path[i]->GetEdge(response.path[i + 1]->GetId());
+        if (edge == nullptr) {
+            return std::unexpected(Error(ErrorType::NotFound, "Route contains a missing road edge"));
+        }
+        auto foundName = GetNameFromId(edge->nameId);
+        std::string street = foundName ? *foundName : "Unknown road";
+        if (!steps.empty() && steps.back().first == street) {
+            steps.back().second += edge->distance;
+        } else {
+            steps.emplace_back(street, edge->distance);
+        }
+    }
+
+    std::ostringstream json;
+    json << std::setprecision(15);
+
+    auto writeJsonString = [&](const std::string& value) {
+        constexpr char hex[] = "0123456789abcdef";
+        json << '"';
+        for (unsigned char c : value) {
+            switch (c) {
+                case '"': json << "\\\""; break;
+                case '\\': json << "\\\\"; break;
+                case '\n': json << "\\n"; break;
+                case '\r': json << "\\r"; break;
+                case '\t': json << "\\t"; break;
+                default:
+                    if (c < 0x20) {
+                        json << "\\u00" << hex[c >> 4] << hex[c & 15];
+                    } else {
+                        json << static_cast<char>(c);
+                    }
+            }
+        }
+        json << '"';
+    };
+
+    json << "{\"found\":true";
+    json << ",\"distanceMeters\":" << response.totalDistanceTraveled;
+    json << ",\"straightLineMeters\":" << response.straightLineDistance;
+    json << ",\"pathNodes\":" << response.pathNodeCount;
+    json << ",\"nodesProcessed\":" << response.nodesProcessed;
+    json << ",\"nodesPushedToHeap\":" << response.nodesPushedToHeap;
+    json << ",\"staleEntriesSkipped\":" << response.staleEntriesSkipped;
+    json << ",\"parentChanges\":" << response.nodesParentChanged;
+    json << ",\"edgesExamined\":" << response.edgesExamined;
+    json << ",\"peakHeapSize\":" << response.peakHeapSize;
+    json << ",\"runtimeSeconds\":" << response.totalTime;
+    json << ",\"snapSeconds\":" << snapSeconds;
+    json << ",\"coordinates\":[";
+    for (size_t i = 0; i < response.path.size(); ++i) {
+        if (i != 0) json << ',';
+        json << '[' << response.path[i]->GetLatitude()
+             << ',' << response.path[i]->GetLongitude() << ']';
+    }
+    json << "],\"steps\":[";
+    for (size_t i = 0; i < steps.size(); ++i) {
+        if (i != 0) json << ',';
+        json << "{\"street\":";
+        writeJsonString(steps[i].first);
+        json << ",\"distanceMeters\":" << steps[i].second << '}';
+    }
+    json << "]}";
+
+    // stdout must contain ONLY JSON for this command.
+    std::cout << json.str() << '\n';
     return {};
 }
 

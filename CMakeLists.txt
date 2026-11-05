@@ -44,7 +44,6 @@ add_executable(app
     src/data_parser.cpp
     src/dijkstra.cpp
     src/list.cpp
-    src/data_parser.cpp
 )
 target_include_directories(app PRIVATE include)
 target_link_libraries(app PRIVATE unordered_dense::unordered_dense)

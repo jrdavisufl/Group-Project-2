@@ -43,6 +43,8 @@ class DataParser {
 
         std::expected<void, Error> PrintAlgorithmResponseFromCoords(double lat1, double long1, double lat2, double long2, AlgorithmType algorithmType = AlgorithmType::AstarAlgorithm);
 
+        std::expected<void, Error> PrintRouteJSONFromCoords(double lat1, double lon1, double lat2, double lon2, AlgorithmType algorithmType);
+
         // runs beforehand to initialize the data
         // sets it in the .build/cache directory
         std::expected<void, Error> ContructDataFromPath();
