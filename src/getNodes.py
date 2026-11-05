@@ -3,14 +3,16 @@ import math
 import os
 import sys
 
+from pathlib import Path
 from pyrosm import OSM
 
-PBF_PATH = "../.data/florida-latest.osm.pbf"
+ROOT = Path(__file__).resolve().parent.parent
 
-OUTPUT_DIR = "../.data"
+OUTPUT_DIR = str(ROOT / ".data")
+PBF_PATH = str(ROOT / ".data" / "florida-latest.osm.pbf")
 
-NODES_FILE = os.path.join(OUTPUT_DIR, "nodes.csv")
-EDGES_FILE = os.path.join(OUTPUT_DIR, "edges.csv")
+NODES_FILE = str(ROOT / ".data" / "nodes.csv")
+EDGES_FILE = str(ROOT / ".data" / "edges.csv")
 
 NETWORK_TYPE = "driving"
 

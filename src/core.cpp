@@ -1,4 +1,5 @@
 #include <expected>
+#include <cmath>
 #include <fstream>
 #include <regex>
 #include <string>
@@ -154,6 +155,41 @@ std::expected<void, Error> GetPath(std::vector<std::string>& inputs) {
     }
 }
 
+
+// Web-only entry point: get_route_json LAT1 LON1 LAT2 LON2 astar|dijkstra
+std::expected<void, Error> GetWebRouteJSON(std::vector<std::string>& inputs) {
+    if (inputs.size() != 6) {
+        return std::unexpected(Error(ErrorType::InvalidInput,
+            "Usage: get_route_json LAT1 LON1 LAT2 LON2 astar|dijkstra"));
+    }
+
+    double coords[4];
+    try {
+        for (int i = 0; i < 4; ++i) {
+            std::size_t parsed = 0;
+            coords[i] = std::stod(inputs[i + 1], &parsed);
+            if (parsed != inputs[i + 1].size() || !std::isfinite(coords[i])) {
+                return std::unexpected(Error(ErrorType::InvalidInput, "Invalid coordinates"));
+            }
+        }
+    } catch (const std::exception&) {
+        return std::unexpected(Error(ErrorType::InvalidInput, "Coordinates must be numbers"));
+    }
+
+    if (coords[0] < -90 || coords[0] > 90 || coords[2] < -90 || coords[2] > 90 ||
+        coords[1] < -180 || coords[1] > 180 || coords[3] < -180 || coords[3] > 180) {
+        return std::unexpected(Error(ErrorType::InvalidInput, "Coordinates out of range"));
+    }
+
+    AlgorithmType algorithm;
+    if (inputs[5] == "astar") algorithm = AlgorithmType::AstarAlgorithm;
+    else if (inputs[5] == "dijkstra") algorithm = AlgorithmType::DijkstraAlgorithm;
+    else return std::unexpected(Error(ErrorType::InvalidInput, "Unknown algorithm"));
+
+    DataParser parser(".data");
+    return parser.PrintRouteJSONFromCoords(coords[0], coords[1], coords[2], coords[3], algorithm);
+}
+
 std::expected<void, Error> ParseMainInputs(std::vector<std::string>& inputs) {
     if (inputs.size() == 0) {
         return std::unexpected(Error(ErrorType::InvalidInput, "No initializer flag passed"));
@@ -172,6 +208,8 @@ std::expected<void, Error> ParseMainInputs(std::vector<std::string>& inputs) {
         return p.ContructDataFromPath();
     } else if (inputs[0] == "get_closest_node") {
         return GetClosestNodeFromCoords(inputs);
+    } else if (inputs[0] == "get_route_json") {
+        return GetWebRouteJSON(inputs);
     } else if (inputs[0] == "get_path") {
         return GetPath(inputs);
     }

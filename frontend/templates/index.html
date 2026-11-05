@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Florida Route Lab · Dijkstra vs A*</title>
+  <link rel="preconnect" href="https://unpkg.com" crossorigin />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand-symbol" aria-hidden="true">↗</div>
+      <div class="brand-name">Florida <strong>Route Lab</strong></div>
+      <span class="brand-subtitle">Dijkstra vs A* · UF COP3530</span>
+    </header>
+
+    <main class="workspace">
+      <aside class="sidebar">
+        <div class="intro">
+          <div class="eyebrow">ROUTE ANALYSIS</div>
+          <h1>Find the shortest path.</h1>
+          <p>Compare two graph-search strategies on the same Florida road network.</p>
+        </div>
+
+        <form id="route-form" class="route-form">
+          <label for="start">Starting address</label>
+          <input id="start" name="start" type="text" maxlength="250" required
+                 value="University of Florida, Gainesville" autocomplete="street-address" />
+          <label for="end">Destination address</label>
+          <input id="end" name="end" type="text" maxlength="250" required
+                 value="Depot Park, Gainesville" autocomplete="off" />
+          <label for="algorithm">Algorithm</label>
+          <select id="algorithm" name="algorithm">
+            <option value="compare" selected>Compare A* and Dijkstra</option>
+            <option value="astar">A* only</option>
+            <option value="dijkstra">Dijkstra only</option>
+          </select>
+          <button type="submit" id="run-button"><span id="button-text">Run algorithm</span> <span aria-hidden="true">↗</span></button>
+        </form>
+        <p class="status" id="status" role="status" aria-live="polite">Enter locations and run a search.</p>
+        <p class="note">Distances follow your road-network data. Search times exclude address lookup and snapping.</p>
+      </aside>
+
+      <section class="content">
+        <div class="map-toolbar">
+          <div class="toolbar-title">Route visualization</div>
+          <div class="legend" aria-label="Route colors">
+            <span><i class="legend-mark astar"></i>A*</span>
+            <span><i class="legend-mark dijkstra"></i>Dijkstra</span>
+          </div>
+        </div>
+        <div id="map" aria-label="Map showing calculated route"></div>
+
+        <div class="results-wrap">
+          <div class="results-heading">
+            <div>
+              <div class="eyebrow">PERFORMANCE</div>
+              <h2>Search comparison</h2>
+            </div>
+            <span id="result-caption" class="result-caption">No results yet</span>
+          </div>
+          <div class="table-scroll">
+            <table id="metrics-table">
+              <thead><tr><th>Metric</th><th>A*</th><th>Dijkstra</th></tr></thead>
+              <tbody id="metrics-body"><tr><td colspan="3" class="empty-result">Run a route to see algorithm metrics.</td></tr></tbody>
+            </table>
+          </div>
+          <div class="directions-header"><h2 id="directions-title">Directions</h2></div>
+          <ol id="directions-list" class="directions"><li>Route instructions will appear here.</li></ol>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
