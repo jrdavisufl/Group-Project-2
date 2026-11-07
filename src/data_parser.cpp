@@ -428,9 +428,7 @@ std::expected<void, Error> DataParser::PrintAlgorithmResponseFromCoords(double l
 }
 
 
-// Returns machine-readable route geometry and search metrics for the browser.
-// This calls the team's EXISTING A* template (with zero heuristic in Dijkstra mode).
-// A standalone Dijkstra implementation can replace that call later.
+// Returns route geometry and search metrics as JSON for the frontend.
 std::expected<void, Error> DataParser::PrintRouteJSONFromCoords(
     double lat1, double lon1, double lat2, double lon2,
     AlgorithmType selectedAlgorithm)

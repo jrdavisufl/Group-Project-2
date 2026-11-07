@@ -1,7 +1,6 @@
 """Local UI bridge for the team's existing C++ GPS route optimizer.
 
 Run this from the repository root with: python app.py
-Set GPS_ROUTER_EXE to the path of your built C++ program when needed.
 """
 from functools import lru_cache
 import json
@@ -45,7 +44,7 @@ def geocode_address(address):
 
 
 def router_executable():
-    """Locate the project executable that accepts the get_route_json CLI flag."""
+    """Locate the compiled C++ routing executable."""
     configured = os.environ.get("GPS_ROUTER_EXE", "").strip()
     if configured:
         candidate = Path(configured).expanduser()
@@ -55,12 +54,7 @@ def router_executable():
             return candidate.resolve()
         raise FileNotFoundError(f"GPS_ROUTER_EXE does not point to a file: {candidate}")
 
-    # These are common target names, not assertions about your team's CMakeLists.
-    names = (
-        "Group-Project-2.exe", "Group-Project-2", "gps_route.exe", "gps_route",
-        "GPSRouteOptimization.exe", "GPSRouteOptimization", "route_optimizer.exe",
-        "route_optimizer", "main.exe", "main",
-    )
+    names = ("app.exe", "app")
     for build_folder in ("cmake-build-debug", "cmake-build-release", "build", "build/Debug"):
         for name in names:
             candidate = ROOT / build_folder / name
@@ -68,10 +62,21 @@ def router_executable():
                 return candidate.resolve()
 
     raise FileNotFoundError(
-        "Could not find your C++ executable. Set GPS_ROUTER_EXE to its path "
-        "(e.g. $env:GPS_ROUTER_EXE='cmake-build-debug\\YOUR_TARGET.exe')."
+        "Could not find compiled C++ executable (expected cmake-build-debug/app.exe)."
     )
 
+
+def runtime_env(executable):
+    """Include CLion's MinGW bin directory in PATH on Windows so runtime DLLs load."""
+    env = os.environ.copy()
+    cache_file = executable.parent / "CMakeCache.txt"
+    if cache_file.is_file():
+        for line in cache_file.read_text(errors="ignore").splitlines():
+            if line.startswith("CMAKE_CXX_COMPILER:"):
+                compiler_dir = str(Path(line.split("=", 1)[1].strip()).parent)
+                env["PATH"] = f"{compiler_dir}{os.pathsep}{env.get('PATH', '')}"
+                break
+    return env
 
 def compute_route(executable, start_coords, end_coords, algorithm):
     command = [
@@ -83,7 +88,7 @@ def compute_route(executable, start_coords, end_coords, algorithm):
     ]
     completed = subprocess.run(
         command, cwd=ROOT, capture_output=True, text=True,
-        check=False, timeout=120,
+        check=False, timeout=120, env=runtime_env(executable),
     )
     if completed.returncode != 0:
         logging.error("C++ routing error (%s): %s", algorithm, completed.stderr.strip())

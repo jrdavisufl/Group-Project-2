@@ -93,17 +93,17 @@ The data is organized into geographic buckets and stored in binary cache files t
 
 The generated Florida road-network dataset is not included in the Git repository because of its size.
 
-The dataset must be obtained separately and placed in the .data folder at the project root.
+The dataset can be downloaded from Google Drive here: https://drive.google.com/drive/folders/1McgOJ67nShRdBM9NzkVraxsfj4eY3lgt. Place the contents in a ".data" folder at the project root.
 
 The expected directory structure is:
 
 .data/
-nodes.csv
-edges.csv
-cache/
-meta.bin
-names.bin
-additional bucket cache files
+    nodes.csv
+    edges.csv
+    cache/
+        meta.bin
+        names.bin
+        additional bucket cache files
 
 If the binary cache is already available, the application can use it directly.
 
@@ -138,33 +138,6 @@ This converts the CSV files into the cached representation used by the C++ appli
 Install the required Python packages by running:
 
 python -m pip install -r requirements.txt
-
-Configure the location of the C++ executable.
-
-In Windows PowerShell, run:
-
-$env:GPS_ROUTER_EXE = 'cmake-build-debug\app.exe'
-
-NOTE:
-If the Flask frontend loads successfully but clicking Run Algorithm produces C++ routing 
-failed, the compiled C++ executable may be unable to locate its required MinGW runtime DLLs.
-
-For Clion's MinGW toolchain, run the following commands:
-
-1.
-$compilerLine = (Select-String -Path ".\cmake-build-debug\CMakeFiles\*\CMakeCXXCompiler.cmake" -Pattern 'set\(CMAKE_CXX_COMPILER ').Line
-
-2.
-$compilerPath = [regex]::Match($compilerLine, '"([^"]+)"').Groups[1].Value
-
-3.
-$env:Path = "$(Split-Path $compilerPath -Parent);$env:Path"
-
-(Clion has a built-in math renderer that treats text wrapped by "$" as an inline math function
-
-View the commands outside of Clion to read the true commands with preserved "$" symbols.)
-
-Then re-launch Flask from the same PowerShell terminal.
 
 Start the Flask server by running:
 
