@@ -143,7 +143,28 @@ Configure the location of the C++ executable.
 
 In Windows PowerShell, run:
 
-$env = 'cmake-build-debug\app.exe'
+$env:GPS_ROUTER_EXE = 'cmake-build-debug\app.exe'
+
+NOTE:
+If the Flask frontend loads successfully but clicking Run Algorithm produces C++ routing 
+failed, the compiled C++ executable may be unable to locate its required MinGW runtime DLLs.
+
+For Clion's MinGW toolchain, run the following commands:
+
+1.
+$compilerLine = (Select-String -Path ".\cmake-build-debug\CMakeFiles\*\CMakeCXXCompiler.cmake" -Pattern 'set\(CMAKE_CXX_COMPILER ').Line
+
+2.
+$compilerPath = [regex]::Match($compilerLine, '"([^"]+)"').Groups[1].Value
+
+3.
+$env:Path = "$(Split-Path $compilerPath -Parent);$env:Path"
+
+(Clion has a built-in math renderer that treats text wrapped by "$" as an inline math function
+
+View the commands outside of Clion to read the true commands with preserved "$" symbols.)
+
+Then re-launch Flask from the same PowerShell terminal.
 
 Start the Flask server by running:
 
